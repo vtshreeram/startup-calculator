@@ -27,6 +27,66 @@ export type FundingRound = {
   discount: number;
 };
 
+export type Industry = {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+};
+
+export type StartupStage = 'Pre-seed' | 'Seed' | 'Series A' | 'Series B+';
+
+export type StartupProfile = {
+  industry: string;
+  stage: StartupStage;
+  teamSize: number;
+};
+
+export type Persona = {
+  id: string;
+  role: string;
+  industryId: string;
+  description: string;
+  typicalResponsibilities: string[];
+};
+
+export type ResponsibilityCommitment = {
+  id: string;
+  label: string;
+  commitmentLevel: number; // 1-5
+  hoursPerWeek: number;
+};
+
+export type AuthorityRequest = {
+  domain: string;
+  scope: 'Advisory' | 'Operational' | 'Decision-Maker' | 'Full Autonomy';
+  reasoning: string;
+};
+
+export type SupportRequirement = {
+  type: string;
+  description: string;
+  isCritical: boolean;
+};
+
+export type Evidence = {
+  type: 'Link' | 'Description' | 'File';
+  value: string;
+};
+
+export type RoleEvaluation = {
+  id: string;
+  founderId: string;
+  personaId: string;
+  responsibilities: ResponsibilityCommitment[];
+  authorities: AuthorityRequest[];
+  supportRequirements: SupportRequirement[];
+  evidence: Evidence[];
+  status: 'pending' | 'approved' | 'rejected';
+  score?: number;
+  aiFeedback?: string;
+};
+
 export const FACTOR_WEIGHTS: Record<keyof FounderFactors, number> = {
   idea: 1,
   skills: 3,
