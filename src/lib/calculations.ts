@@ -5,6 +5,7 @@ export type CapTableEntry = {
   name: string;
   shares: number;
   percentage: number;
+  paperValue: number;
   type: 'founder' | 'investor' | 'option_pool';
 };
 
@@ -42,6 +43,7 @@ export function calculateCapTable(
       name: f.name,
       shares: percentage * TOTAL_INITIAL_SHARES,
       percentage: percentage * 100,
+      paperValue: 0,
       type: 'founder',
     };
   });
@@ -58,10 +60,22 @@ export function calculateCapTable(
 
   // 2. Process Funding Rounds
   rounds.forEach((round) => {
-    const postMoneyValuation = round.preMoneyValuation + round.investmentAmount;
-    const investorOwnership =
-      postMoneyValuation > 0 ? round.investmentAmount / postMoneyValuation : 0;
-    const optionPoolOwnership = round.optionPoolPercentage / 100;
+    let postMoneyValuation = 0;
+    let investorOwnership = 0;
+    let optionPoolOwnership = 0;
+
+    if (round.type === 'priced') {
+      postMoneyValuation = round.preMoneyValuation + round.investmentAmount;
+      investorOwnership = postMoneyValuation > 0 ? round.investmentAmount / postMoneyValuation : 0;
+      optionPoolOwnership = round.optionPoolPercentage / 100;
+    } else if (round.type === 'safe') {
+      // Standard YC Post-Money SAFE estimation
+      // A SAFE converts at the valuation cap (or discount, but we use cap for simple modeling)
+      postMoneyValuation = round.valuationCap + round.investmentAmount;
+      investorOwnership = postMoneyValuation > 0 ? round.investmentAmount / postMoneyValuation : 0;
+      optionPoolOwnership = 0; // SAFEs don't typically create option pools until priced round
+    }
+
     const totalDilution = investorOwnership + optionPoolOwnership;
     const existingOwnership = 1 - totalDilution;
 
@@ -73,13 +87,13 @@ export function calculateCapTable(
     const newTotalShares = currentTotalShares / existingOwnership;
     const investorShares = newTotalShares * investorOwnership;
     const optionPoolShares = newTotalShares * optionPoolOwnership;
-    const sharePrice =
-      newTotalShares > 0 ? postMoneyValuation / newTotalShares : 0;
+    const sharePrice = newTotalShares > 0 ? postMoneyValuation / newTotalShares : 0;
 
-    // Update existing entries percentages
+    // Update existing entries percentages and paper value
     currentEntries = currentEntries.map((entry) => ({
       ...entry,
       percentage: (entry.shares / newTotalShares) * 100,
+      paperValue: entry.shares * sharePrice,
     }));
 
     // Add new investor
@@ -89,6 +103,7 @@ export function calculateCapTable(
         name: `${round.name} Investors`,
         shares: investorShares,
         percentage: investorOwnership * 100,
+        paperValue: investorShares * sharePrice,
         type: 'investor',
       });
     }
@@ -102,12 +117,15 @@ export function calculateCapTable(
         currentEntries[existingPoolIndex].shares += optionPoolShares;
         currentEntries[existingPoolIndex].percentage =
           (currentEntries[existingPoolIndex].shares / newTotalShares) * 100;
+        currentEntries[existingPoolIndex].paperValue = 
+          currentEntries[existingPoolIndex].shares * sharePrice;
       } else {
         currentEntries.push({
           id: `pool-${round.id}`,
           name: 'Option Pool',
           shares: optionPoolShares,
           percentage: optionPoolOwnership * 100,
+          paperValue: optionPoolShares * sharePrice,
           type: 'option_pool',
         });
       }

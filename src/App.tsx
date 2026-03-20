@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Calculator, ChevronRight, Users, TrendingUp, PieChart as PieChartIcon } from 'lucide-react';
+import { Calculator, ChevronRight, Users, TrendingUp, PieChart as PieChartIcon, GraduationCap } from 'lucide-react';
 import { Founder, FundingRound } from './types';
 import { FounderSection } from './components/FounderSection';
 import { FundingSection } from './components/FundingSection';
@@ -13,11 +13,13 @@ export default function App() {
     {
       id: '1',
       name: 'Founder 1',
+      role: 'CEO',
       factors: { idea: 8, skills: 7, time: 10, capital: 5, network: 6, risk: 8 },
     },
     {
       id: '2',
       name: 'Founder 2',
+      role: 'CTO',
       factors: { idea: 3, skills: 9, time: 10, capital: 2, network: 4, risk: 8 },
     },
   ]);
@@ -41,8 +43,12 @@ export default function App() {
             <h1 className="text-xl font-bold tracking-tight text-slate-900">
               Startup Equity Calculator
             </h1>
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold ml-2">
+              <GraduationCap className="w-3.5 h-3.5" />
+              Advisor Edition
+            </span>
           </div>
-          <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500 font-medium">
+          <div className="hidden md:flex items-center gap-2 text-sm text-slate-500 font-medium">
             <span>Calculate Splits</span>
             <ChevronRight className="w-4 h-4" />
             <span>Model Rounds</span>
@@ -63,7 +69,7 @@ export default function App() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`
-                    flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200
+                    flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap
                     ${isActive
                       ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'

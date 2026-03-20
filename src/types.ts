@@ -10,15 +10,21 @@ export type FounderFactors = {
 export type Founder = {
   id: string;
   name: string;
+  role: string;
   factors: FounderFactors;
 };
 
 export type FundingRound = {
   id: string;
   name: string;
-  preMoneyValuation: number;
+  type: 'priced' | 'safe';
   investmentAmount: number;
+  // Priced Round Fields
+  preMoneyValuation: number;
   optionPoolPercentage: number;
+  // SAFE Fields
+  valuationCap: number;
+  discount: number;
 };
 
 export const FACTOR_WEIGHTS: Record<keyof FounderFactors, number> = {

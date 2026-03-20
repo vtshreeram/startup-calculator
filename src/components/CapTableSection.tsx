@@ -6,7 +6,13 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from 'recharts';
+import { Lightbulb } from 'lucide-react';
 import { Founder, FundingRound } from '../types';
 import { calculateCapTable } from '../lib/calculations';
 import { cn } from '../lib/utils';
@@ -54,13 +60,39 @@ export function CapTableSection({ founders, rounds }: CapTableSectionProps) {
 
   if (!currentCapTable) return null;
 
+  // Prepare data for the Paper Value chart
+  const paperValueData = capTableHistory.map((history) => {
+    const dataPoint: any = { name: history.roundName };
+    history.entries.forEach((entry) => {
+      if (entry.type === 'founder') {
+        dataPoint[entry.name] = entry.paperValue;
+      }
+    });
+    return dataPoint;
+  });
+
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-semibold text-slate-900">Live Cap Table</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          See exactly how equity is distributed after all funding rounds.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-slate-900">Live Cap Table</h2>
+          <p className="text-sm text-slate-500 mt-1">
+            See exactly how equity is distributed after all funding rounds.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-4 items-start">
+        <div className="bg-amber-100 p-2 rounded-lg shrink-0">
+          <Lightbulb className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-amber-900">Advisor Tip: The Watermelon vs. Grape</h4>
+          <p className="text-sm text-amber-800 mt-1">
+            Don't obsess over your ownership percentage shrinking. 10% of a $100M watermelon is much better than 100% of a $10k grape. 
+            Focus on the <strong>Paper Value</strong> column—if that number is going up, you're making the right decisions.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -72,6 +104,7 @@ export function CapTableSection({ founders, rounds }: CapTableSectionProps) {
                   <th className="px-6 py-4">Shareholder</th>
                   <th className="px-6 py-4 text-right">Shares</th>
                   <th className="px-6 py-4 text-right">Ownership</th>
+                  <th className="px-6 py-4 text-right">Paper Value</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -107,6 +140,9 @@ export function CapTableSection({ founders, rounds }: CapTableSectionProps) {
                     <td className="px-6 py-4 text-right font-semibold text-slate-900">
                       {formatPercent(entry.percentage)}
                     </td>
+                    <td className="px-6 py-4 text-right font-mono font-medium text-emerald-600">
+                      {entry.paperValue > 0 ? formatCurrency(entry.paperValue) : '-'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -117,6 +153,9 @@ export function CapTableSection({ founders, rounds }: CapTableSectionProps) {
                     {formatNumber(currentCapTable.totalShares)}
                   </td>
                   <td className="px-6 py-4 text-right">100.00%</td>
+                  <td className="px-6 py-4 text-right font-mono text-emerald-600">
+                    {currentCapTable.postMoneyValuation > 0 ? formatCurrency(currentCapTable.postMoneyValuation) : '-'}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -168,34 +207,79 @@ export function CapTableSection({ founders, rounds }: CapTableSectionProps) {
       </div>
 
       {rounds.length > 0 && (
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-indigo-900 mb-4">
-            Round Summary: {currentCapTable.roundName}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <p className="text-sm text-indigo-600 font-medium mb-1">
-                Post-Money Valuation
-              </p>
-              <p className="text-2xl font-bold text-indigo-900">
-                {formatCurrency(currentCapTable.postMoneyValuation)}
-              </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6">
+            <h3 className="text-lg font-semibold text-indigo-900 mb-4">
+              Round Summary: {currentCapTable.roundName}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div>
+                <p className="text-sm text-indigo-600 font-medium mb-1">
+                  Post-Money Valuation
+                </p>
+                <p className="text-2xl font-bold text-indigo-900">
+                  {formatCurrency(currentCapTable.postMoneyValuation)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-indigo-600 font-medium mb-1">
+                  Total Shares
+                </p>
+                <p className="text-2xl font-bold text-indigo-900 font-mono">
+                  {formatNumber(currentCapTable.totalShares)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-indigo-600 font-medium mb-1">
+                  Share Price
+                </p>
+                <p className="text-2xl font-bold text-indigo-900 font-mono">
+                  {formatCurrency(currentCapTable.sharePrice)}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-indigo-600 font-medium mb-1">
-                Total Shares
-              </p>
-              <p className="text-2xl font-bold text-indigo-900 font-mono">
-                {formatNumber(currentCapTable.totalShares)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-indigo-600 font-medium mb-1">
-                Share Price
-              </p>
-              <p className="text-2xl font-bold text-indigo-900 font-mono">
-                {formatCurrency(currentCapTable.sharePrice)}
-              </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-slate-900 mb-6">
+              Founder Paper Value Growth
+            </h3>
+            <div className="h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={paperValueData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: '#64748b' }}
+                    tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    contentStyle={{
+                      borderRadius: '8px',
+                      border: '1px solid #e2e8f0',
+                      boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                    }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  {founders.map((founder, idx) => (
+                    <Bar 
+                      key={founder.id} 
+                      dataKey={founder.name} 
+                      fill={COLORS[idx % COLORS.length]} 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

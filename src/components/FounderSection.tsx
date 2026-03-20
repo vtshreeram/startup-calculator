@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Lightbulb, ShieldCheck } from 'lucide-react';
 import { Founder, FACTOR_LABELS, FACTOR_WEIGHTS } from '../types';
 
 interface FounderSectionProps {
@@ -12,6 +12,7 @@ export function FounderSection({ founders, setFounders }: FounderSectionProps) {
     const newFounder: Founder = {
       id: crypto.randomUUID(),
       name: `Founder ${founders.length + 1}`,
+      role: 'Co-Founder',
       factors: {
         idea: 5,
         skills: 5,
@@ -28,8 +29,8 @@ export function FounderSection({ founders, setFounders }: FounderSectionProps) {
     setFounders(founders.filter((f) => f.id !== id));
   };
 
-  const updateFounderName = (id: string, name: string) => {
-    setFounders(founders.map((f) => (f.id === id ? { ...f, name } : f)));
+  const updateFounderField = (id: string, field: keyof Founder, value: string) => {
+    setFounders(founders.map((f) => (f.id === id ? { ...f, [field]: value } : f)));
   };
 
   const updateFounderFactor = (
@@ -64,7 +65,7 @@ export function FounderSection({ founders, setFounders }: FounderSectionProps) {
   }, [founders]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-slate-900">Co-Founders</h2>
@@ -81,6 +82,19 @@ export function FounderSection({ founders, setFounders }: FounderSectionProps) {
         </button>
       </div>
 
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-4 items-start">
+        <div className="bg-amber-100 p-2 rounded-lg shrink-0">
+          <Lightbulb className="w-5 h-5 text-amber-600" />
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-amber-900">Advisor Tip: Avoid the 50/50 Trap</h4>
+          <p className="text-sm text-amber-800 mt-1">
+            Never split equity evenly just to avoid a hard conversation. Ideas are cheap; execution is everything. 
+            Use the sliders below to objectively weigh who is bringing what to the table. Also, <strong>always</strong> use a 4-year vesting schedule with a 1-year cliff.
+          </p>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {founders.map((founder) => (
           <div
@@ -93,23 +107,37 @@ export function FounderSection({ founders, setFounders }: FounderSectionProps) {
               </span>
             </div>
             
-            <div className="flex items-center justify-between mb-6 pr-16">
-              <input
-                type="text"
-                value={founder.name}
-                onChange={(e) => updateFounderName(founder.id, e.target.value)}
-                className="text-lg font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none transition-colors px-1 py-0.5 w-full"
-                placeholder="Founder Name"
-              />
+            <div className="flex items-start justify-between mb-6 pr-16">
+              <div className="space-y-2 w-full">
+                <input
+                  type="text"
+                  value={founder.name}
+                  onChange={(e) => updateFounderField(founder.id, 'name', e.target.value)}
+                  className="text-lg font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none transition-colors px-1 py-0.5 w-full"
+                  placeholder="Founder Name"
+                />
+                <input
+                  type="text"
+                  value={founder.role}
+                  onChange={(e) => updateFounderField(founder.id, 'role', e.target.value)}
+                  className="text-sm text-slate-500 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none transition-colors px-1 py-0.5 w-full"
+                  placeholder="Role (e.g., CEO, CTO)"
+                />
+              </div>
               {founders.length > 1 && (
                 <button
                   onClick={() => removeFounder(founder.id)}
-                  className="text-slate-400 hover:text-red-500 transition-colors p-1 ml-2 flex-shrink-0"
+                  className="text-slate-400 hover:text-red-500 transition-colors p-1 ml-2 flex-shrink-0 mt-1"
                   title="Remove Founder"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
+            </div>
+
+            <div className="mb-6 flex items-center gap-2 text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+              <ShieldCheck className="w-4 h-4" />
+              Standard 4-Year Vesting, 1-Year Cliff Applied
             </div>
 
             <div className="space-y-4">
