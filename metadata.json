@@ -1,0 +1,5 @@
+{
+  "name": "Startup Equity Calculator",
+  "description": "Calculate co-founder equity splits, view live cap tables, and model funding rounds to understand dilution.",
+  "requestFramePermissions": []
+}
